@@ -12,13 +12,28 @@ const getProjects = async (req, res) => {
   }
 };
 
+// @desc    Get single project
+// @route   GET /api/projects/:id
+// @access  Public
+const getProjectById = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    res.json(project);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Create a project
 // @route   POST /api/projects
 // @access  Private (Admin)
 const createProject = async (req, res) => {
-  const { title, description, image, techStack, liveLink, githubLink } = req.body;
+  const { title, description, mainImage, detailImages, video, liveLink } = req.body;
 
-  if (!title || !description || !image) {
+  if (!title || !description || !mainImage) {
     return res.status(400).json({ message: 'Please add all required fields' });
   }
 
@@ -26,10 +41,10 @@ const createProject = async (req, res) => {
     const project = await Project.create({
       title,
       description,
-      image,
-      techStack,
-      liveLink,
-      githubLink,
+      mainImage,
+      detailImages,
+      video,
+      liveLink
     });
     res.status(201).json(project);
   } catch (error) {
@@ -79,6 +94,7 @@ const deleteProject = async (req, res) => {
 
 module.exports = {
   getProjects,
+  getProjectById,
   createProject,
   updateProject,
   deleteProject,

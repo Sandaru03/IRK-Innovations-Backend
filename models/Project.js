@@ -6,21 +6,21 @@ const projectSchema = new mongoose.Schema({
     required: true
   },
   description: {
+    type: String, // Short description for card
+    required: true
+  },
+  mainImage: {
     type: String,
     required: true
   },
-  image: {
-    type: String,
-    required: true // Assuming image URL or path needs to be required
-  },
-  techStack: {
-    type: [String], // Array of strings to list technologies
+  detailImages: {
+    type: [String], // Array of image URLs for the details page
     default: []
   },
-  liveLink: {
-    type: String
+  video: {
+    type: String // URL for the video
   },
-  githubLink: {
+  liveLink: {
     type: String
   }
 }, { timestamps: true });
