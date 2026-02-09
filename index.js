@@ -3,21 +3,30 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+
 const Admin = require('./models/Admin');
 const authRouter = require('./routers/authRouter');
 const projectRouter = require('./routers/projectRouter');
-const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// ================== MIDDLEWARE ==================
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// ================== ROUTES ==================
+
+// Health check
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
+// Contact form
 app.post('/api/contact', async (req, res) => {
   console.log('Contact form hit:', req.body);
+
   const { name, email, subject, message } = req.body;
 
   try {
@@ -30,7 +39,7 @@ app.post('/api/contact', async (req, res) => {
     });
 
     const mailOptions = {
-      from: email,
+      from: `"${name}" <${email}>`,
       to: process.env.EMAIL_USER,
       subject: `New Contact Form Submission: ${subject}`,
       html: `
@@ -40,12 +49,13 @@ app.post('/api/contact', async (req, res) => {
           <li><strong>Email:</strong> ${email}</li>
           <li><strong>Subject:</strong> ${subject}</li>
         </ul>
-        <h3>Message:</h3>
+        <h3>Message</h3>
         <p>${message}</p>
       `,
     };
 
     await transporter.sendMail(mailOptions);
+
     res.status(200).json({ message: 'Message sent successfully!' });
   } catch (error) {
     console.error('Email Error:', error);
@@ -53,44 +63,51 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
+// API routers
 app.use('/api/auth', authRouter);
 app.use('/api/projects', projectRouter);
 
-app.get('/', (req, res) => {
-  res.send('API is running...');
-});
-
-// Catch-all for 404s
+// 404 handler
 app.use((req, res) => {
   console.log(`404: ${req.method} ${req.url}`);
-  res.status(404).send(`Route ${req.url} not found on this server.`);
+  res.status(404).json({
+    message: `Route ${req.url} not found on this server.`,
+  });
 });
 
-// Database Connection & Admin Seeding
+// ================== DATABASE ==================
 mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('MongoDB Connected Successfully');
 
-    // Seed Default Admin
-    const adminExists = await Admin.findOne({ email: 'admin@irkinnovations.com' });
+    // Seed default admin
+    const adminExists = await Admin.findOne({
+      email: 'admin@irkinnovations.com',
+    });
+
     if (!adminExists) {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash('admin123', salt);
+
       await Admin.create({
         email: 'admin@irkinnovations.com',
         password: hashedPassword,
       });
-      console.log('Default Admin Created: admin@irkinnovations.com / admin123');
+
+      console.log(
+        'Default Admin Created: admin@irkinnovations.com / admin123'
+      );
     }
   })
-  .catch((err) => console.error('MongoDB Connection Error:', err));
-
-// Start Server
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  .catch((err) => {
+    console.error('MongoDB Connection Error:', err);
+    process.exit(1);
   });
-}
+
+// ================== START SERVER ==================
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
 
 module.exports = app;
