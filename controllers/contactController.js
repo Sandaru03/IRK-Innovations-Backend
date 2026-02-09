@@ -1,7 +1,5 @@
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const sendEmail = async (req, res) => {
   console.log('Received contact form submission:', req.body);
   const { name, email, subject, message } = req.body;
@@ -10,7 +8,13 @@ const sendEmail = async (req, res) => {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
+  if (!process.env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY is not set');
+    return res.status(500).json({ message: 'Email service not configured.' });
+  }
+
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: 'IRK Innovations <onboarding@resend.dev>',
       to: process.env.EMAIL_USER,
