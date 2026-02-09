@@ -31,9 +31,9 @@ const getProjectById = async (req, res) => {
 // @route   POST /api/projects
 // @access  Private (Admin)
 const createProject = async (req, res) => {
-  const { title, description, mainImage, detailImages, video, liveLink } = req.body;
+  const { title, description, shortDescription, mainImage, detailImages, liveLink } = req.body;
 
-  if (!title || !description || !mainImage) {
+  if (!title || !description || !shortDescription || !mainImage) {
     return res.status(400).json({ message: 'Please add all required fields' });
   }
 
@@ -41,9 +41,9 @@ const createProject = async (req, res) => {
     const project = await Project.create({
       title,
       description,
+      shortDescription,
       mainImage,
       detailImages,
-      video,
       liveLink
     });
     res.status(201).json(project);

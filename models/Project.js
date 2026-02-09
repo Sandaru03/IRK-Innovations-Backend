@@ -6,6 +6,10 @@ const projectSchema = new mongoose.Schema({
     required: true
   },
   description: {
+    type: String, // Full description
+    required: true
+  },
+  shortDescription: {
     type: String, // Short description for card
     required: true
   },
@@ -16,9 +20,6 @@ const projectSchema = new mongoose.Schema({
   detailImages: {
     type: [String], // Array of image URLs for the details page
     default: []
-  },
-  video: {
-    type: String // URL for the video
   },
   liveLink: {
     type: String
