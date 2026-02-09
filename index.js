@@ -8,6 +8,7 @@ const nodemailer = require('nodemailer');
 const Admin = require('./models/Admin');
 const authRouter = require('./routers/authRouter');
 const projectRouter = require('./routers/projectRouter');
+const contactRouter = require('./routers/contactRouter');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,48 +25,12 @@ app.get('/', (req, res) => {
 });
 
 // Contact form
-app.post('/api/contact', async (req, res) => {
-  console.log('Contact form hit:', req.body);
-
-  const { name, email, subject, message } = req.body;
-
-  try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_APP_PASSWORD,
-      },
-    });
-
-    const mailOptions = {
-      from: `"${name}" <${email}>`,
-      to: process.env.EMAIL_USER,
-      subject: `New Contact Form Submission: ${subject}`,
-      html: `
-        <h3>Contact Details</h3>
-        <ul>
-          <li><strong>Name:</strong> ${name}</li>
-          <li><strong>Email:</strong> ${email}</li>
-          <li><strong>Subject:</strong> ${subject}</li>
-        </ul>
-        <h3>Message</h3>
-        <p>${message}</p>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    res.status(200).json({ message: 'Message sent successfully!' });
-  } catch (error) {
-    console.error('Email Error:', error);
-    res.status(500).json({ message: 'Error sending message.' });
-  }
-});
+// Uses contactRouter -> contactController
 
 // API routers
 app.use('/api/auth', authRouter);
 app.use('/api/projects', projectRouter);
+app.use('/api/contact', contactRouter);
 
 // 404 handler
 app.use((req, res) => {
