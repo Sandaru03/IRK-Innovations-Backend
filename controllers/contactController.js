@@ -1,4 +1,6 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async (req, res) => {
   console.log('Received contact form submission:', req.body);
@@ -8,22 +10,11 @@ const sendEmail = async (req, res) => {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
-  // TEST: Send success response immediately to check if route works
-  // return res.status(200).json({ message: 'Route reached successfully!' });
-
   try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_APP_PASSWORD,
-      },
-    });
-
-    const mailOptions = {
-      from: `"${name}" <${process.env.EMAIL_USER}>`,
-      replyTo: email,
+    await resend.emails.send({
+      from: 'IRK Innovations <onboarding@resend.dev>',
       to: process.env.EMAIL_USER,
+      replyTo: email,
       subject: `New Contact Form Submission: ${subject}`,
       html: `
         <h3>Contact Details</h3>
@@ -35,9 +26,8 @@ const sendEmail = async (req, res) => {
         <h3>Message:</h3>
         <p>${message}</p>
       `,
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
     res.status(200).json({ message: 'Message sent successfully!' });
   } catch (error) {
     console.error('Email Error:', error);

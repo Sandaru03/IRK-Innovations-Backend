@@ -3,7 +3,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
 
 const Admin = require('./models/Admin');
 const authRouter = require('./routers/authRouter');
